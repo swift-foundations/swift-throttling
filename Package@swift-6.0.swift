@@ -17,7 +17,7 @@ let package = Package(
         .library(name: .throttling, targets: [.throttling])
     ],
     dependencies: [
-        .package(url: "https://github.com/coenttb/swift-bounded-cache", from: "0.0.1"),
+        .package(url: "https://github.com/swift-foundations/swift-bounded-cache.git", from: "0.0.1"),
     ],
     targets: [
         .target(
