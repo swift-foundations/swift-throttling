@@ -1,4 +1,4 @@
-// swift-tools-version:5.10
+// swift-tools-version: 6.3.1
 
 import PackageDescription
 
@@ -8,23 +8,25 @@ extension String {
 
 extension Target.Dependency {
     static var throttling: Self { .target(name: .throttling) }
-    static var boundedCache: Self { .product(name: "BoundedCache", package: "swift-bounded-cache") }
 }
 
 let package = Package(
     name: "swift-throttling",
+    platforms: [
+        .macOS(.v26),
+        .iOS(.v26),
+        .tvOS(.v26),
+        .watchOS(.v26),
+        .visionOS(.v26)
+    ],
     products: [
         .library(name: .throttling, targets: [.throttling])
     ],
-    dependencies: [
-        .package(url: "https://github.com/swift-foundations/swift-bounded-cache.git", branch: "main"),
-    ],
+    dependencies: [],
     targets: [
         .target(
             name: .throttling,
-            dependencies: [
-                .boundedCache
-            ]
+            dependencies: []
         ),
         .testTarget(
             name: .throttling.tests,

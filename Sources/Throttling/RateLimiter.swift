@@ -5,7 +5,6 @@
 //  Created by Coen ten Thije Boonkkamp on 19/12/2024.
 //
 
-import BoundedCache
 import Foundation
 
 /// A powerful, actor-based rate limiter providing multi-window rate limiting with exponential backoff.
@@ -249,7 +248,7 @@ public actor RateLimiter<Key: Hashable & Sendable>: Sendable {
     private let windows: [WindowConfig]
     private let maxCacheSize: Int
     private let backoffMultiplier: Double
-    private var attemptsByKey: BoundedCache<Key, [AttemptInfo]>
+    private var attemptsByKey: Storage<[AttemptInfo]>
     private let metricsCallback: (@Sendable (Key, RateLimitResult) async -> Void)?
 
     /// Initializes a new rate limiter with the specified configuration.
@@ -288,7 +287,7 @@ public actor RateLimiter<Key: Hashable & Sendable>: Sendable {
         self.windows = windows.sorted(by: { $0.duration < $1.duration })
         self.maxCacheSize = maxCacheSize
         self.backoffMultiplier = backoffMultiplier
-        self.attemptsByKey = BoundedCache(capacity: maxCacheSize)
+        self.attemptsByKey = Storage(capacity: maxCacheSize)
         self.metricsCallback = metricsCallback
     }
 
@@ -430,7 +429,7 @@ public actor RateLimiter<Key: Hashable & Sendable>: Sendable {
         for i in 0..<infos.count {
             infos[i].attempts += 1
         }
-        attemptsByKey.insert(infos, forKey: key)
+        attemptsByKey.setValue(infos, for: key)
     }
 
     /// Records a failed operation for the specified key, incrementing consecutive failure count.
@@ -468,11 +467,11 @@ public actor RateLimiter<Key: Hashable & Sendable>: Sendable {
     /// - Note: Failures persist across different time windows until explicitly cleared with ``recordSuccess(_:)``
     ///         or ``reset(_:)``.
     public func recordFailure(_ key: Key) async {
-        guard var infos = attemptsByKey.getValue(forKey: key) else { return }
+        guard var infos = attemptsByKey.cachedValue(for: key) else { return }
         for i in 0..<infos.count {
             infos[i].consecutiveFailures += 1
         }
-        attemptsByKey.insert(infos, forKey: key)
+        attemptsByKey.setValue(infos, for: key)
     }
 
     /// Records a successful operation for the specified key, resetting consecutive failure count to zero.
@@ -509,11 +508,11 @@ public actor RateLimiter<Key: Hashable & Sendable>: Sendable {
     /// - Note: This only clears consecutive failures, not the attempt counts within time windows.
     ///         Rate limits still apply based on the configured windows.
     public func recordSuccess(_ key: Key) async {
-        guard var infos = attemptsByKey.getValue(forKey: key) else { return }
+        guard var infos = attemptsByKey.cachedValue(for: key) else { return }
         for i in 0..<infos.count {
             infos[i].consecutiveFailures = 0
         }
-        attemptsByKey.insert(infos, forKey: key)
+        attemptsByKey.setValue(infos, for: key)
     }
 
     /// Completely resets all rate limiting data for the specified key.
@@ -545,11 +544,11 @@ public actor RateLimiter<Key: Hashable & Sendable>: Sendable {
     /// - Warning: This completely removes the key from internal tracking. The next request will be treated
     ///           as if it's the first request ever made by this key.
     public func reset(_ key: Key) async {
-        _ = attemptsByKey.removeValue(forKey: key)
+        _ = attemptsByKey.removeValue(for: key)
     }
 
     private func getCurrentWindows(key: Key, timestamp: Date) -> [AttemptInfo] {
-        let existing = attemptsByKey.getValue(forKey: key) ?? []
+        let existing = attemptsByKey.cachedValue(for: key) ?? []
         var result: [AttemptInfo] = []
 
         for (i, window) in windows.enumerated() {
