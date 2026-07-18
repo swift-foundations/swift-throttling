@@ -155,7 +155,7 @@ struct ReadmeVerificationTests {
             windows: [.minutes(1, maxAttempts: 10)],
             maxCacheSize: 10000,
             backoffMultiplier: 2.0,
-            metricsCallback: { key, result in
+            metricsCallback: { _, _ in
                 // Optional callback
             }
         )

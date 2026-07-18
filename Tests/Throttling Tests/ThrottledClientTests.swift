@@ -24,7 +24,7 @@ struct ThrottledClientTests {
 
         // First 5 should proceed with pacing
         for i in 0..<5 {
-            #expect(results[i].canProceed, "Request \(i+1) should be allowed")
+            #expect(results[i].canProceed, "Request \(i + 1) should be allowed")
             if i > 0 {
                 #expect(results[i].delay > 0, "Should have pacing delay")
             }
@@ -80,7 +80,7 @@ struct ThrottledClientTests {
                 #expect(result.delay > 0, "Should have pacing delay after first request")
                 #expect(
                     abs(result.delay - (Double(i - 1) * 0.1)) < 0.001,
-                    "Delay should be ~\(Double(i-1) * 0.1)s"
+                    "Delay should be ~\(Double(i - 1) * 0.1)s"
                 )
             }
         }

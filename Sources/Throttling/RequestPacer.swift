@@ -55,7 +55,7 @@ import Foundation
 ///     makeRequest()
 /// }
 /// ```
-public actor RequestPacer<Key: Hashable & Sendable>: Sendable {
+public actor RequestPacer<Key: Hashable & Sendable> {
 
     /// The result of scheduling a request.
     public struct ScheduleResult: Sendable {

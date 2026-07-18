@@ -356,7 +356,8 @@ struct RateLimiterTests {
         let result = await rateLimiter.checkLimit("user1")
         #expect(!result.isAllowed)
         #expect(result.backoffInterval != nil)
-        #expect(result.backoffInterval == 120.0)  // 2^1 * 60 = 120 seconds for 1 consecutive failure
+        // 2^1 * 60 = 120 seconds for 1 consecutive failure.
+        #expect(result.backoffInterval == 120.0)
     }
 
     @Test("Different key types")

@@ -85,7 +85,7 @@ import Foundation
 ///
 /// - ``WindowConfig/minutes(_:maxAttempts:)``
 /// - ``WindowConfig/hours(_:maxAttempts:)``
-public actor RateLimiter<Key: Hashable & Sendable>: Sendable {
+public actor RateLimiter<Key: Hashable & Sendable> {
 
     /// Configuration for a rate limiting time window.
     ///
